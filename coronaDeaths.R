@@ -49,7 +49,8 @@ y_target <- y_range[1] + diff(y_range)*0.95
 x_target <- (y_target - y_range[1])/(log10(2)/c(2,4,6))
 x_0 <- x_range[1] + diff(x_range)*0.05
 
-staticplot + annotate('text', y = 10^y_target, x = x_0, label = 'Doubling in ...')+
-  annotate('text', y = 10^y_target, x = x_target, label = paste(c(2,4,6), 'days'))
-
+print(
+  staticplot + annotate('text', y = 10^y_target, x = x_0, label = 'Doubling in ...', color='grey')+
+  annotate('text', y = 10^y_target, x = x_target, label = paste(c(2,4,6), 'days'), color='grey')
+)
 # interactive_plot <- plotly::ggplotly(staticplot)

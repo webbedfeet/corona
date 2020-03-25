@@ -1,6 +1,7 @@
 ## Using data from JHU
-pacman::p_load(char=c('tidyverse','janitor', 'coronavirus','ggrepel', 'fs', 'git2r'))
-update_datasets(silence=T)
+pacman::p_load(char=c('tidyverse','janitor', 'coronavirus','ggrepel',
+                      'gghighlight','fs', 'git2r'))
+# update_datasets(silence=T)
 
 ## On 2020-03-23, JHU changed their data updates and format, so the coronavirus
 ## package is not being updated properly. Now grabbing data directly from
@@ -41,27 +42,30 @@ deaths_us <- raw_data %>%
   mutate(days = as.numeric(date - min(date))) %>%
   ungroup()
 
-
 top_10 <- deaths_us %>%
 	group_by(state) %>%
 	filter(days == max(days)) %>%
 	ungroup() %>%
 	top_n(10, deaths)
 
-ggplot(deaths_us,
+us_plot <- ggplot(deaths_us,
 	   aes(x = days, y = deaths, color = state))+
-	geom_label_repel(data = top_10, aes(x = days, y=deaths, label = state, color = state),
-					 hjust = 1, show.legend=F)+
 	geom_line(show.legend=F)+
-	geom_point(data = top_10, aes(size = deaths), show.legend=F)+
+	geom_point(data = deaths_us %>% group_by(state) %>% filter(days==max(days)) %>% ungroup(),
+	           aes(size = deaths), show.legend=F)+
+  gghighlight(state %in% top_10$state)+
 	scale_y_log10('Cumulative number of deaths')+
 	theme_classic() +
 	labs(x = 'Days since fifth death',
 		 caption = glue::glue('Source: JHU, updated {max(deaths_us$date)}'))+
-  geom_abline(intercept = log10(5), slope = log10(exp(log(2)/2)), linetype=2) +
-  annotate('text', x = 7, y = 10^(log10(5) + 7*log10(exp(log(2)/2))), label= 'double in 2 days',
-           angle = 180*atan2(y = exp(7*log(2)/2), 7)/pi, hjust=0, vjust = 1)+
-  geom_abline(intercept = log10(5), slope = log10(exp(log(2)/4)), linetype=2) +
-  annotate('text', x = 15, y = 10^(log10(5) + 15*log10(exp(log(2)/4))), label= 'double in 4 days',
-           angle = 180*atan2(y = exp(15*log(2)/4), 15)/pi, hjust=0, vjust = 1)
+  geom_abline(intercept = log10(5), slope = log10(2)/c(2,3,4), linetype=2, color = 'grey')
 
+y_range <- ggplot_build(us_plot)$layout$panel_scales_y[[1]]$range$range
+y_target <- y_range[1] + diff(y_range)*0.95
+x_target <- (y_target - y_range[1])/(log10(2)/c(2,3,4))
+
+print(
+  us_plot +
+    annotate('text', y = 10^y_target, x = 1, label = 'Doubling in ...', color='grey')+
+    annotate('text', y = 10^y_target, x = x_target, label = paste(2:4, 'days'), color='grey')
+)
