@@ -37,7 +37,7 @@ raw_data <- raw_data %>%
 
 
 deaths_us <- raw_data %>%
-  filter(deaths >= 5) %>%
+  filter(deaths >= 10) %>%
   group_by(state) %>%
   mutate(days = as.numeric(date - min(date))) %>%
   ungroup()
@@ -56,9 +56,9 @@ us_plot <- ggplot(deaths_us,
   gghighlight(state %in% top_10$state)+
 	scale_y_log10('Cumulative number of deaths')+
 	theme_classic() +
-	labs(x = 'Days since fifth death',
+	labs(x = 'Days since tenth death',
 		 caption = glue::glue('Source: JHU, updated {max(deaths_us$date)}'))+
-  geom_abline(intercept = log10(5), slope = log10(2)/c(2,3,4), linetype=2, color = 'grey')
+  geom_abline(intercept = log10(10), slope = log10(2)/c(2,3,4), linetype=2, color = 'grey')
 
 y_range <- ggplot_build(us_plot)$layout$panel_scales_y[[1]]$range$range
 y_target <- y_range[1] + diff(y_range)*0.95
