@@ -15,7 +15,7 @@ deaths <- read_csv('https://raw.githubusercontent.com/CSSEGISandData/COVID-19/ma
   arrange(date)
 
 deaths_after_10 <- deaths %>%
-  filter(deaths >= 10) %>%
+  filter(deaths >= 100) %>%
   arrange(date) %>%
   group_by(country_region) %>%
   mutate(days = as.numeric(date - min(date))) %>%
@@ -35,10 +35,10 @@ staticplot <- ggplot(deaths_after_10, aes(x = days, y = deaths)) +
              aes(color = country_region, size=deaths),
               show.legend=F)+
   gghighlight(country_region %in% top_ten$country_region)+
-  geom_abline(intercept = log10(10), slope = log10(2)/c(2,4,6),
+  geom_abline(intercept = log10(100), slope = log10(2)/c(2,4,6),
               color = 'grey', linetype=2)+
   scale_y_log10('Cumulative deaths')+
-  labs(x = 'Days since 10th death')+
+  labs(x = 'Days since 100th death')+
   labs(caption = glue::glue('Source: JHU, updated {max(deaths$date)}'))+
   theme_classic()
 
